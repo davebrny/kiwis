@@ -1,7 +1,7 @@
 # kiwis 🥝
 > open a **k**eyword **i**n a **w**ebsite's **i**nternal **s**earch  
 
-<a href="url"><img src="https://i.imgur.com/EpEUQpo.jpg"></a><br></br>
+<a href="url"><img src="https://i.imgur.com/qERpvSX.jpg"></a><br></br>
 
 
 ## installation
@@ -25,6 +25,7 @@
 &nbsp;
 
 
+
 #### adding new sites  
 
 - go to a site's internal search and search the word `kiwi`  
@@ -35,8 +36,18 @@ ini format:   website name = url
 ```
 
 - give the website a name, then add that name to the menu text in the [ezMenu] ini section  
-- right click on the tray menu icon and select "reload this script" to update your changes  
 
+> right click on the tray menu icon and select "reload this script" to update your changes  
+
+&nbsp;
+
+#### using ezMenu  
+
+the menu in this script is generated using ezMenu. &nbsp;you can read more about that [here](https://github.com/davebrny/ezMenu) but the main things that would be useful to know for this script are:  
+
+- lines that are indented by 1 tab or 4 spaces become sub-menus  
+- lines that contains 3 dashes `---` and nothing else will turn into menu separators  
+- putting a full stop at the start of the line disables it and turns the text grey  
 &nbsp;
 
 
