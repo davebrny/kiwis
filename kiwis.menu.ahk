@@ -1,9 +1,14 @@
 ﻿/*
 [script info]
-version     = 0.1
-description = search a keyword in a website's internal search
+version     = 0.2
+description = open a keyword in a website's internal search
 author      = davebrny
 source      = https://github.com/davebrny/kiwis
+
+
+[settings]
+recent_total=5
+recent_sites=
 
 
 [ezMenu]
@@ -121,6 +126,9 @@ Services
     Google Translate
 
 
+>>recent_list>>
+
+
 [ezMenu_end] ===================================================================
 
 
@@ -170,7 +178,7 @@ Letterboxd (reviews) =https://letterboxd.com/search/reviews/kiwi
 Letterboxd = https://letterboxd.com/search/kiwi
 Meta Critic = http://www.metacritic.com/search/all/kiwi/results
 Netflix (unofficial) = http://unogs.com/?q=kiwi
-Play Store = https://market.android.com/search?q=kiwi&c=apps
+Play Store = https://play.google.com/store/search?q=kiwi
 Quora = https://www.quora.com/search?q=kiwi
 Reddit (G) = http://www.google.com/search?q=site:reddit.com+kiwi
 Reddit = https://www.reddit.com/search?q=kiwi&sort=relevance&t=all
@@ -193,10 +201,12 @@ YouTube Trailer = http://www.youtube.com/results?search_query=kiwi+trailer
 
 */
 
+
 #noEnv
 #singleInstance, force
 sendMode input
 setWorkingDir, % a_scriptDir
+onExit, save_recent
 
 menu, tray, tip, % "kiwis.menu"
 menu, tray, icon, kiwis.menu.ico, , , useErrorLevel
@@ -204,6 +214,13 @@ menu, tray, add
 menu, tray, add, Start with Windows, start_with_windows
 sww_shortcut := a_startup "\" subStr(a_scriptName, 1, strLen(a_scriptName) - 4) ".lnk"
 menu, tray, % fileExist(sww_shortcut) ? "check" : "unCheck", Start with Windows
+menu, tray, add, Clear recent sites, clear_recents
+
+iniRead, recent_sites, % a_lineFile, settings, recent_sites
+iniRead, recent_total, % a_lineFile, settings, recent_total
+recent := []
+loop, parse, % trim(recent_sites, "|"), |, % a_space
+    recent.push(a_loopField)
 
 menu_text := ezMenu_get(a_lineFile)
 hotkey, ^!k, show_kiwis ; altGr + k
@@ -230,7 +247,7 @@ menu, kiwis, default, % keyword
 menu, kiwis, icon,    % keyword, kiwis.menu.ico
 menu, kiwis, disable, % keyword
 menu, kiwis, add
-ezMenu("kiwis", menu_text)
+ezMenu("kiwis", menu_text, "append_recent")
 return
 
 
@@ -241,11 +258,57 @@ if (url = "ERROR")
     msgBox, ERROR: "%a_thisMenuItem%" not found in ini section
 else
     {
-    if keyword is space ; then change to root url
+    if (keyword = "LAUNCH MODE")  ; then change to root url
         splitPath, url, , , , , url
     run, % strReplace(url, "kiwi", keyword)
     }
+add_recent(1, a_thisMenuItem)
 return
+
+
+
+add_recent(at, kiwi) {
+    global recent, recent_total
+    position := hasVal(recent, kiwi)
+    if (position)   ; if already in array
+        recent.removeAt(position)
+    recent.insertAt(at, kiwi)
+    if (recent.maxIndex() > recent_total)
+        recent.pop()
+}
+
+hasVal(haystack, needle) {    ; by jNizM
+    if !(isObject(haystack)) || (haystack.Length() = 0)
+        return 0
+    for index, value in haystack
+        if (value = needle)
+            return index
+    return 0
+}
+
+
+
+append_recent() {
+    global recent, menu_text
+    if recent.maxIndex()
+        {
+        recent_list := "`n---`n.Recent kiwis:`n---`n"
+        loop, % recent.maxIndex()
+            recent_list .= recent[a_index] "`n"
+        }
+    else recent_list := ""
+    return strReplace(menu_text, ">>recent_list>>", recent_list)
+}
+
+
+
+save_recent:    ; (onExit)
+iniRead, those_kiwis, % a_lineFile, settings, recent_sites
+loop, % recent.maxIndex()
+    these_kiwis .= recent[a_index] "|"
+if (these_kiwis != those_kiwis)
+    iniWrite, % these_kiwis, % a_lineFile, settings, recent_sites
+exitApp
 
 
 
@@ -262,4 +325,11 @@ else
     menu, tray, check, Start with Windows
     trayTip, , Startup Shortcut created, 5
     }
+return
+
+
+
+clear_recents:    ; (tray menu)
+recent := []
+iniWrite, % "", % a_lineFile, settings, recent_sites
 return
