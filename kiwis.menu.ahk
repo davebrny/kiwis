@@ -1,6 +1,6 @@
 ﻿/*
 [script info]
-version     = 0.2
+version     = 0.2.1
 description = open a keyword in a website's internal search
 author      = davebrny
 source      = https://github.com/davebrny/kiwis
@@ -240,12 +240,15 @@ keyword := clipboard
 clipboard := clipboard_save
 
 if keyword is space    ; if empty or whitespace
-     keyword := "LAUNCH MODE"
-else keyword := trim(keyword)
-menu, kiwis, add,     % keyword, open_kiwi
-menu, kiwis, default, % keyword
-menu, kiwis, icon,    % keyword, kiwis.menu.ico
-menu, kiwis, disable, % keyword
+     selected := "LAUNCH MODE"
+else selected := trim(keyword)
+if (strLen(selected) > t := 32)    ; if keyword is longer than t then truncate
+    selected := subStr(selected, 1, t/2) "  .  .  .  .  "  subStr(selected, -t/2)
+
+menu, kiwis, add,     % selected, open_kiwi
+menu, kiwis, default, % selected
+menu, kiwis, icon,    % selected, kiwis.menu.ico
+menu, kiwis, disable, % selected
 menu, kiwis, add
 ezMenu("kiwis", menu_text, "append_recent")
 return
